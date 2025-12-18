@@ -41,14 +41,20 @@ public class PerformanceReview {
     @Column(name = "overall_rating", precision = 3, scale = 2)
     private BigDecimal overallRating;
 
-    @Column(length = 50)
-    private String status = "DRAFT"; // DRAFT, SUBMITTED, APPROVED, REJECTED
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 20)
+    private ReviewStatus status;
 
     @Column(columnDefinition = "TEXT")
     private String comments;
 
-    @OneToMany(mappedBy = "review", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(
+            mappedBy = "review",
+            cascade = CascadeType.ALL,
+            orphanRemoval = true
+    )
     @Builder.Default
+    @com.fasterxml.jackson.annotation.JsonManagedReference
     private List<PerformanceCriteria> criteriaList = new ArrayList<>();
 
     @CreationTimestamp
@@ -58,4 +64,11 @@ public class PerformanceReview {
     @UpdateTimestamp
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
+
+    @PrePersist
+    public void prePersist() {
+        if (status == null) {
+            status = ReviewStatus.DRAFT;
+        }
+    }
 }

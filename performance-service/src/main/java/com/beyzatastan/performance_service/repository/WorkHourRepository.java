@@ -13,9 +13,10 @@ import java.util.Optional;
 @Repository
 public interface WorkHourRepository extends JpaRepository<WorkHour, Long> {
     List<WorkHour> findByEmployeeId(Long employeeId);
-    Optional<WorkHour> findByEmployeeIdAndWorkDate(Long employeeId, LocalDate workDate);
-    List<WorkHour> findByEmployeeIdAndWorkDateBetween(Long employeeId, LocalDate startDate, LocalDate endDate);
-
+    Optional<WorkHour> findByEmployeeIdAndWorkDate(
+            Long employeeId,
+            LocalDate workDate
+    );
     @Query("SELECT w FROM WorkHour w WHERE w.employeeId = :employeeId AND YEAR(w.workDate) = :year AND MONTH(w.workDate) = :month")
     List<WorkHour> findMonthlyWorkHours(@Param("employeeId") Long employeeId,
                                         @Param("year") int year,

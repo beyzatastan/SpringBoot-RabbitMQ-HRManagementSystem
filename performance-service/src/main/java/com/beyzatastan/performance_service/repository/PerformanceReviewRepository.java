@@ -11,5 +11,4 @@ import java.util.List;
 public interface PerformanceReviewRepository extends JpaRepository<PerformanceReview, Long> {
     List<PerformanceReview> findByEmployeeId(Long employeeId);
     List<PerformanceReview> findByReviewerId(Long reviewerId);
-    List<PerformanceReview> findByStatus(String status);
 }

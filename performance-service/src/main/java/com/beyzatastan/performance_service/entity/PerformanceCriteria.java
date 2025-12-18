@@ -9,6 +9,7 @@ import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
 
+
 @Entity
 @Table(name = "performance_criteria")
 @Data
@@ -23,7 +24,7 @@ public class PerformanceCriteria {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "review_id", nullable = false)
-    @JsonIgnore
+    @com.fasterxml.jackson.annotation.JsonBackReference
     private PerformanceReview review;
 
     @Column(name = "criteria_name", nullable = false, length = 100)
@@ -33,8 +34,15 @@ public class PerformanceCriteria {
     private BigDecimal rating;
 
     @Column(name = "max_rating", precision = 3, scale = 2)
-    private BigDecimal maxRating = new BigDecimal("5.00");
+    private BigDecimal maxRating;
 
     @Column(columnDefinition = "TEXT")
     private String comments;
+
+    @PrePersist
+    public void prePersist() {
+        if (maxRating == null) {
+            maxRating = new BigDecimal("5.00");
+        }
+    }
 }

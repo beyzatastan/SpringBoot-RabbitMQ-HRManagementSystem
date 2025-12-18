@@ -12,11 +12,13 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
-
 @Entity
-@Table(name = "work_hours", uniqueConstraints = {
-        @UniqueConstraint(columnNames = {"employee_id", "work_date"})
-})
+@Table(
+        name = "work_hours",
+        uniqueConstraints = {
+                @UniqueConstraint(columnNames = {"employee_id", "work_date"})
+        }
+)
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
@@ -42,8 +44,9 @@ public class WorkHour {
     @Column(name = "total_hours", precision = 5, scale = 2)
     private BigDecimal totalHours;
 
-    @Column(length = 50)
-    private String status = "PRESENT"; // PRESENT, ABSENT, LATE, HALF_DAY, LEAVE
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 20)
+    private WorkHourStatus status;
 
     @Column(columnDefinition = "TEXT")
     private String notes;
@@ -55,4 +58,11 @@ public class WorkHour {
     @UpdateTimestamp
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
+
+    @PrePersist
+    public void prePersist() {
+        if (status == null) {
+            status = WorkHourStatus.PRESENT;
+        }
+    }
 }
