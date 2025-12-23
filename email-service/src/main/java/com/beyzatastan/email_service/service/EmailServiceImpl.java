@@ -7,7 +7,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 
@@ -20,8 +19,8 @@ public class EmailServiceImpl implements EmailService {
     private final EmailLogRepository emailLogRepository;
 
     @Override
-    @Transactional
     public void sendEmail(String to, String subject, String body) {
+
         EmailLog emailLog = EmailLog.builder()
                 .toEmail(to)
                 .subject(subject)
@@ -41,15 +40,17 @@ public class EmailServiceImpl implements EmailService {
 
             emailLog.setStatus("SENT");
             emailLog.setSentAt(LocalDateTime.now());
+
             log.info("Email sent successfully to: {}", to);
 
         } catch (Exception e) {
             emailLog.setStatus("FAILED");
             emailLog.setErrorMessage(e.getMessage());
             emailLog.setRetryCount(emailLog.getRetryCount() + 1);
-            log.error("Failed to send email to {}: {}", to, e.getMessage());
-            throw e; // RabbitMQ retry için exception fırlat
 
+            log.error("Failed to send email to {}: {}", to, e.getMessage());
+
+            throw e; // RabbitMQ retry için
         } finally {
             emailLogRepository.save(emailLog);
         }
@@ -57,57 +58,46 @@ public class EmailServiceImpl implements EmailService {
 
     @Override
     public void sendWelcomeEmail(String to, String username) {
-        String subject = "Welcome to HRMS!";
-        String body = String.format(
-                "Hello %s,\n\n" +
+        sendEmail(
+                to,
+                "Welcome to HRMS!",
+                "Hello " + username + ",\n\n" +
                         "Welcome to our HR Management System!\n\n" +
-                        "Your account has been successfully created.\n\n" +
-                        "Best regards,\n" +
-                        "HRMS Team",
-                username
+                        "Best regards,\nHRMS Team"
         );
-        sendEmail(to, subject, body);
     }
 
     @Override
     public void sendPasswordResetEmail(String to, String resetToken) {
-        String subject = "Password Reset Request";
-        String body = String.format(
+        sendEmail(
+                to,
+                "Password Reset Request",
                 "Hello,\n\n" +
-                        "You have requested to reset your password.\n\n" +
-                        "Your reset token is: %s\n\n" +
-                        "This token will expire in 15 minutes.\n\n" +
-                        "If you didn't request this, please ignore this email.\n\n" +
-                        "Best regards,\n" +
-                        "HRMS Team",
-                resetToken
+                        "Your reset token is: " + resetToken + "\n\n" +
+                        "This token expires in 15 minutes.\n\n" +
+                        "HRMS Team"
         );
-        sendEmail(to, subject, body);
     }
 
     @Override
     public void sendLeaveApprovalEmail(String to, String employeeName, String leaveType) {
-        String subject = "Leave Request Approved";
-        String body = String.format(
-                "Hello %s,\n\n" +
-                        "Your %s leave request has been approved.\n\n" +
-                        "Best regards,\n" +
-                        "HRMS Team",
-                employeeName, leaveType
+        sendEmail(
+                to,
+                "Leave Request Approved",
+                "Hello " + employeeName + ",\n\n" +
+                        "Your " + leaveType + " leave request has been approved.\n\n" +
+                        "HRMS Team"
         );
-        sendEmail(to, subject, body);
     }
 
     @Override
     public void sendSalaryPaymentEmail(String to, String employeeName, String amount) {
-        String subject = "Salary Payment Notification";
-        String body = String.format(
-                "Hello %s,\n\n" +
-                        "Your salary of %s has been processed.\n\n" +
-                        "Best regards,\n" +
-                        "HRMS Team",
-                employeeName, amount
+        sendEmail(
+                to,
+                "Salary Payment Notification",
+                "Hello " + employeeName + ",\n\n" +
+                        "Your salary of " + amount + " has been processed.\n\n" +
+                        "HRMS Team"
         );
-        sendEmail(to, subject, body);
     }
 }

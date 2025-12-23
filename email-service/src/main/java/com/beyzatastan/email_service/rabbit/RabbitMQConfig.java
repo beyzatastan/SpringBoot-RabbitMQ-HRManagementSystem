@@ -20,7 +20,6 @@ public class RabbitMQConfig {
     @Value("${rabbitmq.routing.key:mail.routing.key}")
     private String routingKey;
 
-    // Dead Letter Queue için
     @Value("${rabbitmq.dlq.name:mailDLQ}")
     private String dlqName;
 
@@ -39,7 +38,7 @@ public class RabbitMQConfig {
     // Dead Letter Queue
     @Bean
     public Queue deadLetterQueue() {
-        return new Queue(dlqName, true);
+        return QueueBuilder.durable(dlqName).build();
     }
 
     // Main Exchange
@@ -54,35 +53,23 @@ public class RabbitMQConfig {
         return new DirectExchange(dlxName);
     }
 
-    // Binding: Queue to Exchange
+    // Binding
     @Bean
-    public Binding mailBinding(Queue mailQueue, TopicExchange mailExchange) {
+    public Binding mailBinding() {
         return BindingBuilder
-                .bind(mailQueue)
-                .to(mailExchange)
+                .bind(mailQueue())
+                .to(mailExchange())
                 .with(routingKey);
     }
 
-    // Binding: DLQ to DLX
     @Bean
-    public Binding deadLetterBinding(Queue deadLetterQueue, DirectExchange deadLetterExchange) {
+    public Binding deadLetterBinding() {
         return BindingBuilder
-                .bind(deadLetterQueue)
-                .to(deadLetterExchange)
+                .bind(deadLetterQueue())
+                .to(deadLetterExchange())
                 .with("mail.dlq.routing.key");
     }
 
-    // JSON Message Converter
-    @Bean
-    public MessageConverter messageConverter() {
-       return messageConverter();
-    }
+    // JSON Converter
 
-    // RabbitTemplate
-    @Bean
-    public RabbitTemplate rabbitTemplate(ConnectionFactory connectionFactory) {
-        RabbitTemplate template = new RabbitTemplate(connectionFactory);
-        template.setMessageConverter(messageConverter());
-        return template;
-    }
 }
