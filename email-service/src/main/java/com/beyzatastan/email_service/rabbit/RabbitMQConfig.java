@@ -1,6 +1,7 @@
 package com.beyzatastan.email_service.rabbit;
 
 import org.springframework.amqp.core.*;
+import org.springframework.amqp.rabbit.config.SimpleRabbitListenerContainerFactory;
 import org.springframework.amqp.rabbit.connection.ConnectionFactory;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.amqp.support.converter.Jackson2JsonMessageConverter;
@@ -22,7 +23,7 @@ public class RabbitMQConfig {
     /**
      * Ana kuyruk adı
      * Email mesajlarının bekleyeceği kuyruk
-     * Default: mailQueue
+     * Defalt: mailQueue
      */
     @Value("${rabbitmq.queue.name:mailQueue}")
     private String queueName;
@@ -46,7 +47,7 @@ public class RabbitMQConfig {
     /**
      * Dead Letter Queue adı
      * Hatalı veya işlenemeyen mesajların gittiği kuyruk
-     * Default: mailDLQ
+     * Defalt: mailDLQ
      */
     @Value("${rabbitmq.dlq.name:mailDLQ}")
     private String dlqName;
@@ -170,9 +171,6 @@ public class RabbitMQConfig {
      * - Java nesnelerini JSON'a çevirir (Producer tarafında)
      * - JSON'u Java nesnesine çevirir (Consumer tarafında)
      * - EmailMessage DTO'su otomatik serialize/deserialize olur
-     * Örnek:
-     * EmailMessage → {"to":"test@test.com","subject":"Hi"} → RabbitMQ
-     * RabbitMQ → {"to":"test@test.com","subject":"Hi"} → EmailMessage
      */
     @Bean
     public MessageConverter messageConverter() {
@@ -195,7 +193,24 @@ public class RabbitMQConfig {
     @Bean
     public RabbitTemplate rabbitTemplate(ConnectionFactory connectionFactory) {
         RabbitTemplate template = new RabbitTemplate(connectionFactory);
-        template.setMessageConverter(messageConverter());  // JSON converter'ı ekle
+        template.setMessageConverter(messageConverter());
         return template;
+    }
+
+    //mail işlemi fail olduğunda retryı önlüyor
+    @Bean
+    public SimpleRabbitListenerContainerFactory rabbitListenerContainerFactory(
+            ConnectionFactory connectionFactory,
+            MessageConverter messageConverter
+    ) {
+        SimpleRabbitListenerContainerFactory factory =
+                new SimpleRabbitListenerContainerFactory();
+
+        factory.setConnectionFactory(connectionFactory);
+        factory.setMessageConverter(messageConverter);
+
+        factory.setDefaultRequeueRejected(false);
+
+        return factory;
     }
 }

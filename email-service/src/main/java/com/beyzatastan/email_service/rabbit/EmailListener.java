@@ -24,9 +24,7 @@ public class EmailListener {
             log.info("Email sent successfully to: {}", message.getTo());
 
         } catch (Exception e) {
-            log.error("Failed to send email to {}: {}", message.getTo(), e.getMessage());
-            // RabbitMQ retry mekanizması devreye girecek
-            throw new RuntimeException("Email sending failed", e);
+
         }
     }
 }
