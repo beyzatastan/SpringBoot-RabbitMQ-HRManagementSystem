@@ -1,4 +1,4 @@
-package com.beyzatastan.employee_service.dto.employee.auth_client;
+package com.beyzatastan.employee_service.dto.auth;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

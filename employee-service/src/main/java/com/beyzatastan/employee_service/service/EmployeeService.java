@@ -1,10 +1,10 @@
 package com.beyzatastan.employee_service.service;
 
 import com.beyzatastan.employee_service.client.AuthServiceClient;
+import com.beyzatastan.employee_service.dto.auth.CreateUserRequest;
 import com.beyzatastan.employee_service.dto.employee.EmployeeCreateRequest;
 import com.beyzatastan.employee_service.dto.employee.EmployeeResponse;
 import com.beyzatastan.employee_service.dto.employee.EmployeeUpdateRequest;
-import com.beyzatastan.employee_service.dto.employee.auth_client.CreateUserRequest;
 import com.beyzatastan.employee_service.entity.Department;
 import com.beyzatastan.employee_service.entity.Employee;
 import com.beyzatastan.employee_service.exception.ResourceNotFoundException;
