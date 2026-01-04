@@ -4,12 +4,16 @@ import com.beyzatastan.auth_service.dto.request.*;
 import com.beyzatastan.auth_service.dto.response.AuthResponse;
 import com.beyzatastan.auth_service.dto.response.MessageResponse;
 import com.beyzatastan.auth_service.dto.response.UserResponse;
+import com.beyzatastan.auth_service.entity.User;
+import com.beyzatastan.auth_service.repository.UserRepository;
 import com.beyzatastan.auth_service.service.AuthService;
+import com.beyzatastan.auth_service.service.EmailProducer;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -19,6 +23,9 @@ import org.springframework.web.bind.annotation.*;
 public class AuthController {
 
     private final AuthService authService;
+    private final UserRepository userRepository;
+    private final PasswordEncoder passwordEncoder;
+    private final EmailProducer emailProducer;
 
     @PostMapping("/signup")
     public ResponseEntity<AuthResponse> signup(@Valid @RequestBody SignupRequest request) {
@@ -118,6 +125,44 @@ public class AuthController {
         );
 
         return ResponseEntity.ok(response);
+    }
+
+    //employee servisten gelen istek
+    @PostMapping("/create-user")
+    public ResponseEntity<UserResponse> createUser(@Valid @RequestBody CreateUserRequest request) {
+        log.info("Creating user from Employee Service: {}", request.getUsername());
+
+        if (userRepository.existsByEmail(request.getEmail())) {
+            throw new RuntimeException("Email already exists");
+        }
+
+        User user = new User();
+        user.setUsername(request.getUsername());
+        user.setEmail(request.getEmail());
+        user.setPassword(passwordEncoder.encode(request.getPassword()));
+        user.setRole(request.getRole());
+        user.setIsActive(true);
+
+        User savedUser = userRepository.save(user);
+
+        // Welcome email gönder
+        try {
+            emailProducer.sendWelcomeEmail(savedUser.getEmail(), savedUser.getUsername());
+            log.info("Welcome email queued for: {}", savedUser.getEmail());
+        } catch (Exception e) {
+            log.error("Failed to queue welcome email: {}", e.getMessage());
+        }
+
+        UserResponse response = UserResponse.builder()
+                .id(savedUser.getId())
+                .username(savedUser.getUsername())
+                .email(savedUser.getEmail())
+                .role(savedUser.getRole())
+                .isActive(savedUser.getIsActive())
+                .createdAt(savedUser.getCreatedAt())
+                .build();
+
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
     @GetMapping("/test")
