@@ -2,6 +2,7 @@ package com.beyzatastan.performance_service.repository;
 
 
 import com.beyzatastan.performance_service.entity.PerformanceReview;
+import com.beyzatastan.performance_service.entity.ReviewStatus;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
@@ -11,4 +12,6 @@ import java.util.List;
 public interface PerformanceReviewRepository extends JpaRepository<PerformanceReview, Long> {
     List<PerformanceReview> findByEmployeeId(Long employeeId);
     List<PerformanceReview> findByReviewerId(Long reviewerId);
+    List<PerformanceReview> findByStatus(ReviewStatus status);
+
 }

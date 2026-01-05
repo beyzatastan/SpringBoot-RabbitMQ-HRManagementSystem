@@ -21,4 +21,6 @@ public interface WorkHourRepository extends JpaRepository<WorkHour, Long> {
     List<WorkHour> findMonthlyWorkHours(@Param("employeeId") Long employeeId,
                                         @Param("year") int year,
                                         @Param("month") int month);
+    boolean existsByEmployeeIdAndWorkDate(Long employeeId, LocalDate workDate);
+
 }
